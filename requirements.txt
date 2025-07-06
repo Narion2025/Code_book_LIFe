@@ -17,4 +17,4 @@ flake8>=6.0.0
 # Optional advanced features
 # numpy>=1.24.0  # Für erweiterte Statistiken
 # scikit-learn>=1.3.0  # Für ML-basierte Erkennung
-# spacy>=3.6.0  # Für NLP-Analysen 
+# spacy>=3.6.0  # Für NLP-Analysen
