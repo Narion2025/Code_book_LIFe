@@ -28,6 +28,15 @@ pip install -r requirements.txt
 python start_codebook_life.py
 ```
 
+### Tests
+
+Nach der Installation der Abhängigkeiten können automatische Funktionstests mit
+`pytest` ausgeführt werden:
+
+```bash
+pytest -q
+```
+
 ### Erste Schritte
 
 1. **GUI starten**: `python start_codebook_life.py`
