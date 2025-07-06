@@ -1,0 +1,23 @@
+framework:
+  meta: {...}
+  prinzipien:
+    - id: ...
+      name: ...
+      beschreibung: ...
+      hauptziele: [...]
+      schritte: [...]
+      regeln: [...]
+      heuristiken: [...]
+      narrative_beispiele: [...]
+      transferbeispiele: [...]
+      semantic_gaps: [...]
+      lessons_learned: [...]
+  regeln: [...]
+  heuristiken: [...]
+  rollen: [...]
+  prozesse: [...]
+  beispiele: [...]
+  transferbeispiele: [...]
+  semantic_gaps: [...]
+  lessons_learned: [...]
+  open_questions: [...]

@@ -1,0 +1,8 @@
+prinzipien:
+  - name: "Teamarbeit"
+    beschreibung: "Ein Prinzip, das echte Zusammenarbeit und gegenseitige Abhängigkeit fördert."
+    marker:
+      - team_cohesion: 5
+      - mutual_dependency: "ja"
+      - meeting_frequency: 2
+      - commitment_level: 4

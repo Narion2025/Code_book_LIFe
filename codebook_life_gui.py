@@ -17,6 +17,7 @@ import json
 import os
 from typing import Dict, List, Any, Optional
 from difflib import SequenceMatcher
+import mimetypes
 
 class CodebookLIFEAssistant:
     def __init__(self, codebook_directory="./codebook_data"):
@@ -201,6 +202,120 @@ class CodebookLIFEAssistant:
             return True
         
         return False
+    
+    def analyze_content_for_category(self, content: str, file_extension: str = "") -> str:
+        """Analysiert Inhalt und schlägt passende Kategorie vor"""
+        content_lower = content.lower()
+        
+        # Keyword-basierte Kategorisierung
+        category_keywords = {
+            "prinzipien": ["prinzip", "grundsatz", "user story", "mapping", "slicing", "narrative", "persona"],
+            "regeln": ["regel", "do", "don't", "nicht", "immer", "niemals", "muss", "soll"],
+            "heuristiken": ["heuristik", "daumenregel", "faustregel", "wenn", "dann", "tipp", "trick"],
+            "rollen": ["rolle", "verantwortung", "aufgabe", "owner", "manager", "team", "stakeholder"],
+            "prozesse": ["prozess", "ablauf", "schritt", "workflow", "refinement", "replenishment", "daily"],
+            "beispiele": ["beispiel", "case", "story", "anwendung", "projekt", "umsetzung"],
+            "transferbeispiele": ["transfer", "übertragung", "anpassung", "kontext", "transformation"],
+            "semantic_gaps": ["gap", "lücke", "problem", "verständnis", "missverständnis", "schwierigkeit"],
+            "lessons_learned": ["lesson", "erfahrung", "gelernt", "erkenntnisse", "best practice", "fehler"],
+            "open_questions": ["frage", "offen", "todo", "unklar", "klären", "diskussion"]
+        }
+        
+        # Dateierweiterung berücksichtigen
+        if file_extension:
+            if file_extension.lower() in ['.py', '.python']:
+                # Python-Dateien sind oft Beispiele oder Prozesse
+                if any(keyword in content_lower for keyword in ["class", "def", "import"]):
+                    return "beispiele"
+            elif file_extension.lower() in ['.yaml', '.yml']:
+                # YAML-Dateien können verschiedene Strukturen haben
+                if "id:" in content_lower and "name:" in content_lower:
+                    return "prinzipien"
+            elif file_extension.lower() == '.txt':
+                # Text-Dateien sind oft Dokumentation
+                if any(keyword in content_lower for keyword in ["regel", "prinzip"]):
+                    return "regeln" if "regel" in content_lower else "prinzipien"
+        
+        # Keyword-Matching
+        category_scores = {}
+        for category, keywords in category_keywords.items():
+            score = sum(1 for keyword in keywords if keyword in content_lower)
+            if score > 0:
+                category_scores[category] = score
+        
+        # Beste Kategorie zurückgeben
+        if category_scores:
+            best_category = max(category_scores.items(), key=lambda x: x[1])[0]
+            return best_category
+        
+        # Fallback
+        return "unknown"
+    
+    def import_file_content(self, file_path: str) -> Dict[str, Any]:
+        """Importiert Dateiinhalt und schlägt Kategorie vor"""
+        try:
+            file_path_obj = Path(file_path)
+            extension = file_path_obj.suffix
+            
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Kategorie analysieren
+            suggested_category = self.analyze_content_for_category(content, extension)
+            
+            # Basis-Item erstellen
+            item_data = {
+                "name": file_path_obj.stem,
+                "beschreibung": f"Importiert aus {file_path_obj.name}",
+                "original_file": str(file_path_obj),
+                "import_date": datetime.now().isoformat(),
+                "suggested_category": suggested_category
+            }
+            
+            # Je nach Dateityp spezifische Verarbeitung
+            if extension.lower() in ['.yaml', '.yml']:
+                try:
+                    yaml_data = yaml.safe_load(content)
+                    if isinstance(yaml_data, dict):
+                        item_data.update(yaml_data)
+                except:
+                    item_data["raw_content"] = content
+            elif extension.lower() == '.py':
+                item_data["code"] = content
+                item_data["language"] = "python"
+            else:
+                item_data["raw_content"] = content
+            
+            return item_data
+            
+        except Exception as e:
+            raise Exception(f"Fehler beim Importieren der Datei: {str(e)}")
+    
+    def add_category(self, category_name: str, description: str = ""):
+        """Fügt eine neue Kategorie hinzu"""
+        if "framework" not in self.framework_data:
+            self.framework_data = self._create_default_framework()
+        
+        category_key = category_name.lower().replace(" ", "_")
+        
+        if category_key not in self.framework_data["framework"]:
+            self.framework_data["framework"][category_key] = []
+            
+            # Meta-Information über die neue Kategorie
+            if "category_meta" not in self.framework_data["framework"]:
+                self.framework_data["framework"]["category_meta"] = {}
+            
+            self.framework_data["framework"]["category_meta"][category_key] = {
+                "display_name": category_name,
+                "description": description,
+                "created_date": datetime.now().isoformat(),
+                "custom": True
+            }
+            
+            self._save_framework_data()
+            return True
+        
+        return False
 
 class CodebookLIFEGUI:
     def __init__(self):
@@ -208,6 +323,7 @@ class CodebookLIFEGUI:
         self.assistant = CodebookLIFEAssistant()
         self.current_category = None
         self.current_item_index = None
+        self.category_mapping = {}
         self.setup_gui()
         
     def setup_gui(self):
@@ -242,6 +358,8 @@ class CodebookLIFEGUI:
         button_frame.pack(fill=tk.X)
         
         ttk.Button(button_frame, text="Neues Item", command=self.create_new_item).pack(fill=tk.X, pady=2)
+        ttk.Button(button_frame, text="📁 Datei importieren", command=self.import_file).pack(fill=tk.X, pady=2)
+        ttk.Button(button_frame, text="➕ Neue Kategorie", command=self.add_new_category).pack(fill=tk.X, pady=2)
         ttk.Button(button_frame, text="Item bearbeiten", command=self.edit_current_item).pack(fill=tk.X, pady=2)
         ttk.Button(button_frame, text="Item löschen", command=self.delete_current_item).pack(fill=tk.X, pady=2)
         
@@ -286,6 +404,12 @@ class CodebookLIFEGUI:
         ttk.Button(analysis_frame, text="📊 Struktur-Analyse", command=self.analyze_structure).pack(fill=tk.X, pady=2)
         ttk.Button(analysis_frame, text="🔍 Lücken-Analyse", command=self.analyze_gaps).pack(fill=tk.X, pady=2)
         
+        # Semantic Grabber Tools
+        grabber_frame = ttk.LabelFrame(right_frame, text="Semantic Grabber")
+        grabber_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Button(grabber_frame, text="🔧 Grabber Library", command=self.open_grabber_library).pack(fill=tk.X, pady=2)
+        
         # Status
         self.status_var = tk.StringVar()
         self.status_var.set("Codebook LIFE bereit")
@@ -300,15 +424,24 @@ class CodebookLIFEGUI:
         self.category_listbox.delete(0, tk.END)
         categories = self.assistant.get_framework_categories()
         
+        # Füge "unknown" Kategorie hinzu, falls nicht vorhanden
+        if "unknown" not in categories:
+            categories.append("unknown")
+        
         for category in categories:
-            self.category_listbox.insert(tk.END, category)
+            # Zeige benutzerfreundliche Namen für Kategorien
+            display_name = category.replace("_", " ").title()
+            self.category_listbox.insert(tk.END, display_name)
+            
+        # Speichere Mapping für interne Verwendung
+        self.category_mapping = {category.replace("_", " ").title(): category for category in categories}
     
     def on_category_select(self, event):
         """Behandelt Kategorieauswahl"""
         selection = self.category_listbox.curselection()
         if selection:
-            category = self.category_listbox.get(selection[0])
-            self.current_category = category
+            display_name = self.category_listbox.get(selection[0])
+            self.current_category = self.category_mapping.get(display_name, display_name.lower().replace(" ", "_"))
             self.refresh_items()
     
     def refresh_items(self):
@@ -667,6 +800,209 @@ priorität: ""
         gap_text.insert(tk.END, "2. Mehr Beispiele und Transferfälle hinzufügen\n")
         gap_text.insert(tk.END, "3. Semantic Gaps dokumentieren\n")
         gap_text.insert(tk.END, "4. Lessons Learned sammeln\n")
+    
+    def import_file(self):
+        """Importiert eine Datei und erstellt automatisch ein Item"""
+        file_path = filedialog.askopenfilename(
+            title="Datei für Import auswählen",
+            filetypes=[
+                ("Alle unterstützten", "*.txt;*.yaml;*.yml;*.py"),
+                ("Text-Dateien", "*.txt"),
+                ("YAML-Dateien", "*.yaml;*.yml"),
+                ("Python-Dateien", "*.py"),
+                ("Alle Dateien", "*.*")
+            ]
+        )
+        
+        if file_path:
+            try:
+                # Datei importieren und analysieren
+                item_data = self.assistant.import_file_content(file_path)
+                suggested_category = item_data.get("suggested_category", "unknown")
+                
+                # Dialog für Kategorie-Bestätigung
+                self.show_import_dialog(item_data, suggested_category)
+                
+            except Exception as e:
+                messagebox.showerror("Import-Fehler", f"Fehler beim Importieren der Datei:\n{str(e)}")
+    
+    def show_import_dialog(self, item_data: Dict[str, Any], suggested_category: str):
+        """Zeigt Dialog für Import-Bestätigung"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Datei-Import")
+        dialog.geometry("600x500")
+        
+        # Header
+        ttk.Label(dialog, text="Datei-Import", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        # Vorgeschlagene Kategorie
+        category_frame = ttk.Frame(dialog)
+        category_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        ttk.Label(category_frame, text="Vorgeschlagene Kategorie:").pack(side=tk.LEFT)
+        
+        category_var = tk.StringVar(value=suggested_category)
+        category_combo = ttk.Combobox(category_frame, textvariable=category_var, width=20)
+        category_combo['values'] = list(self.category_mapping.keys())
+        category_combo.pack(side=tk.LEFT, padx=(5, 0))
+        
+        # Item-Vorschau
+        ttk.Label(dialog, text="Item-Vorschau:", font=("Arial", 12, "bold")).pack(pady=(10, 5))
+        
+        preview_text = scrolledtext.ScrolledText(dialog, wrap=tk.WORD, height=15)
+        preview_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        # Vorschau befüllen
+        preview_content = yaml.dump(item_data, default_flow_style=False, allow_unicode=True)
+        preview_text.insert(tk.END, preview_content)
+        
+        # Buttons
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        def import_item():
+            selected_category = self.category_mapping.get(category_var.get(), category_var.get())
+            
+            # Item-Daten aus Vorschau lesen
+            try:
+                updated_content = preview_text.get(1.0, tk.END).strip()
+                final_item_data = yaml.safe_load(updated_content)
+                
+                # Item hinzufügen
+                self.assistant.add_item_to_category(selected_category, final_item_data)
+                
+                # GUI aktualisieren
+                self.refresh_categories()
+                if self.current_category == selected_category:
+                    self.refresh_items()
+                
+                self.update_status(f"Datei erfolgreich importiert in Kategorie '{selected_category}'")
+                dialog.destroy()
+                
+            except Exception as e:
+                messagebox.showerror("Fehler", f"Fehler beim Importieren: {str(e)}")
+        
+        ttk.Button(button_frame, text="Importieren", command=import_item).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Abbrechen", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
+    
+    def add_new_category(self):
+        """Fügt eine neue Kategorie hinzu"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Neue Kategorie")
+        dialog.geometry("400x300")
+        
+        ttk.Label(dialog, text="Neue Kategorie erstellen", font=("Arial", 14, "bold")).pack(pady=10)
+        
+        # Name
+        name_frame = ttk.Frame(dialog)
+        name_frame.pack(fill=tk.X, padx=10, pady=5)
+        
+        ttk.Label(name_frame, text="Name:").pack(side=tk.LEFT)
+        name_var = tk.StringVar()
+        name_entry = ttk.Entry(name_frame, textvariable=name_var, width=30)
+        name_entry.pack(side=tk.LEFT, padx=(5, 0))
+        
+        # Beschreibung
+        ttk.Label(dialog, text="Beschreibung:").pack(pady=(10, 5))
+        desc_text = scrolledtext.ScrolledText(dialog, wrap=tk.WORD, height=8)
+        desc_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        # Buttons
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        def create_category():
+            name = name_var.get().strip()
+            description = desc_text.get(1.0, tk.END).strip()
+            
+            if not name:
+                messagebox.showwarning("Warnung", "Bitte geben Sie einen Namen ein.")
+                return
+            
+            if self.assistant.add_category(name, description):
+                self.refresh_categories()
+                self.update_status(f"Kategorie '{name}' erstellt")
+                dialog.destroy()
+            else:
+                messagebox.showwarning("Warnung", "Kategorie existiert bereits.")
+        
+        ttk.Button(button_frame, text="Erstellen", command=create_category).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Abbrechen", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
+    
+    def open_grabber_library(self):
+        """Öffnet die Semantic Grabber Library"""
+        grabber_window = tk.Toplevel(self.root)
+        grabber_window.title("Semantic Grabber Library")
+        grabber_window.geometry("1000x700")
+        
+        # Header
+        ttk.Label(grabber_window, text="Semantic Grabber Library", 
+                 font=("Arial", 14, "bold")).pack(pady=10)
+        
+        # Hauptframe
+        main_frame = ttk.Frame(grabber_window)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Linke Spalte - Grabber Liste
+        left_frame = ttk.Frame(main_frame)
+        left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 10))
+        
+        ttk.Label(left_frame, text="Grabber", font=("Arial", 12, "bold")).pack(pady=(0, 5))
+        
+        grabber_listbox = tk.Listbox(left_frame, width=25, height=20)
+        grabber_listbox.pack(pady=(0, 10))
+        
+        # Grabber-Buttons
+        grabber_button_frame = ttk.Frame(left_frame)
+        grabber_button_frame.pack(fill=tk.X)
+        
+        ttk.Button(grabber_button_frame, text="Neuer Grabber").pack(fill=tk.X, pady=2)
+        ttk.Button(grabber_button_frame, text="Bearbeiten").pack(fill=tk.X, pady=2)
+        ttk.Button(grabber_button_frame, text="Löschen").pack(fill=tk.X, pady=2)
+        
+        # Rechte Spalte - Grabber Details
+        right_frame = ttk.Frame(main_frame)
+        right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        
+        ttk.Label(right_frame, text="Grabber Details", font=("Arial", 12, "bold")).pack(pady=(0, 5))
+        
+        # Grabber Editor
+        grabber_text = scrolledtext.ScrolledText(right_frame, wrap=tk.WORD)
+        grabber_text.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        # Control Buttons
+        control_frame = ttk.Frame(right_frame)
+        control_frame.pack(fill=tk.X)
+        
+        ttk.Button(control_frame, text="Speichern").pack(side=tk.LEFT, padx=5)
+        ttk.Button(control_frame, text="Export").pack(side=tk.LEFT, padx=5)
+        ttk.Button(control_frame, text="Import").pack(side=tk.LEFT, padx=5)
+        
+        # Beispiel-Grabber laden
+        example_grabber = """# Beispiel Semantic Grabber
+id: example_grabber
+name: "Beispiel Grabber"
+description: "Ein Beispiel für einen Semantic Grabber"
+patterns:
+  - "user story"
+  - "mapping"
+  - "slicing"
+keywords:
+  - "prinzip"
+  - "regel"
+  - "heuristik"
+semantic_rules:
+  - if_contains: ["user", "story"]
+    then_category: "prinzipien"
+  - if_contains: ["regel", "do", "don't"]
+    then_category: "regeln"
+"""
+        grabber_text.insert(tk.END, example_grabber)
+        
+        # Grabber-Liste befüllen
+        grabber_listbox.insert(tk.END, "Example Grabber")
+        grabber_listbox.insert(tk.END, "LIFE Framework Grabber")
+        grabber_listbox.insert(tk.END, "Process Grabber")
     
     def update_status(self, message: str):
         """Aktualisiert die Statuszeile"""

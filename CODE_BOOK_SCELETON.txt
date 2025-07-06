@@ -1,0 +1,47 @@
+framework:
+  name: "LIFE"
+  meta:
+    autor: "..."
+    version: "..."
+    stand: "2024-07"
+    ziel: "..."
+  prinzipien:
+    - id: "USM"
+      name: "User Story Mapping"
+      beschreibung: "..."
+      hauptziele:
+        - "..."
+      schritte:
+        - "..."
+      regeln:
+        - id: "usm_regel_1"
+          text: "Immer aus Nutzersicht beschreiben."
+        - id: "usm_regel_2"
+          text: "..."
+      heuristiken:
+        - "Slice Features so klein wie sinnvoll."
+      narrative_beispiele:
+        - "In Projekt X wurde USM so eingeführt: ..."
+      transferbeispiele:
+        - kontext: "klassische Organisation"
+          regel: "Mapping muss als Workshop etabliert werden."
+          beispiel: "..."
+      semantic_gaps:
+        - beschreibung: "Stakeholder ohne Nutzerkontakt"
+          schwellenwert: "Weniger als 20% im Mapping-Workshop"
+          lösung: "Zusätzliche Nutzerinterviews"
+      lessons_learned:
+        - "Einbindung aller Stakeholder ist kritisch."
+  rollen:
+    - name: "Product Owner"
+      aufgaben: ["..."]
+    - name: "UX Designer"
+      aufgaben: ["..."]
+  prozesse:
+    - name: "Backlog Refinement"
+      schritte: ["..."]
+  beispiele:
+    - name: "Backlog-Transformation"
+      ausgangslage: "..."
+      transformation: "..."
+      lessons_learned: ["..."]

@@ -1,0 +1,82 @@
+framework_markers:
+  - name: "meeting_frequency"
+    beschreibung: "Wie häufig finden Team- oder Projektmeetings statt?"
+    typ: "quantitativ"
+    skala: "Anzahl Meetings pro Woche/Monat"
+    beispiel: 3
+
+  - name: "product_focus_level"
+    beschreibung: "Wie stark ist der Fokus des Teams auf das Produkt/die Nutzerbedürfnisse?"
+    typ: "qualitativ"
+    skala: "1 (gering) - 5 (sehr hoch)"
+    beispiel: 4
+
+  - name: "team_cohesion"
+    beschreibung: "Wie sehr arbeitet das Team als echtes Team zusammen?"
+    typ: "qualitativ"
+    indikator: 
+      - "Gemeinsame Ziele"
+      - "Abhängigkeit voneinander"
+      - "Häufigkeit von Abstimmungen"
+    skala: "1 (kaum Teamarbeit) - 5 (sehr starke Teamkohäsion)"
+    beispiel: 5
+
+  - name: "mutual_dependency"
+    beschreibung: "Benötigen die Teammitglieder sich gegenseitig, um Ziele zu erreichen?"
+    typ: "qualitativ"
+    indikator:
+      - "Interdisziplinarität"
+      - "Überlappende Verantwortlichkeiten"
+    skala: "ja/nein oder 1-5"
+    beispiel: "ja"
+
+  - name: "stakeholder_involvement"
+    beschreibung: "Wie stark und regelmäßig sind externe Stakeholder eingebunden?"
+    typ: "quantitativ/qualitativ"
+    skala: "1 (nie) - 5 (ständig)"
+    beispiel: 3
+
+  - name: "transparency_level"
+    beschreibung: "Wie transparent sind Entscheidungen und Abläufe im Framework?"
+    typ: "qualitativ"
+    indikator:
+      - "Zugänglichkeit von Informationen"
+      - "Offenheit von Entscheidungen"
+    skala: "1 (intransparent) - 5 (voll transparent)"
+    beispiel: 4
+
+  - name: "autonomy_degree"
+    beschreibung: "Wie hoch ist der Grad der Selbstorganisation des Teams?"
+    typ: "qualitativ"
+    skala: "1 (keine Autonomie) - 5 (volle Autonomie)"
+    beispiel: 4
+
+  - name: "feedback_cycles"
+    beschreibung: "Wie häufig werden Feedbackschleifen durchgeführt?"
+    typ: "quantitativ"
+    skala: "Feedback pro Iteration/Monat"
+    beispiel: 2
+
+  - name: "adaptability"
+    beschreibung: "Wie gut passt sich das Team/Framework an Veränderungen an?"
+    typ: "qualitativ"
+    skala: "1 (rigide) - 5 (sehr anpassungsfähig)"
+    beispiel: 5
+
+  - name: "commitment_level"
+    beschreibung: "Wie stark fühlen sich Teammitglieder und Stakeholder den Zielen verpflichtet?"
+    typ: "qualitativ"
+    skala: "1 (gering) - 5 (hoch)"
+    beispiel: 4
+
+  - name: "customer_integration"
+    beschreibung: "Wie stark werden Kund*innen/Nutzer in den Prozess einbezogen?"
+    typ: "quantitativ/qualitativ"
+    skala: "1 (gar nicht) - 5 (sehr stark)"
+    beispiel: 3
+
+  - name: "decision_speed"
+    beschreibung: "Wie schnell werden Entscheidungen im Team oder Framework getroffen?"
+    typ: "quantitativ"
+    skala: "Durchschnittliche Zeit in Tagen/Stunden"
+    beispiel: "2 Tage"

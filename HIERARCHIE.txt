@@ -1,0 +1,10 @@
+framework:
+  name: "LIFE"
+  prinzipien:            # Prinzipien/Grundsätze (Oberkategorie)
+  regeln:                # Explizite Regeln, Do’s & Don'ts, Heuristiken
+  beispiele:             # Konkrete, narrative und strukturierte Anwendungsbeispiele
+  transfer:              # Transfer- und Transformationsbeispiele
+  rollen:                # Typische Rollen/Beteiligte
+  prozesse:              # Standardabläufe, Steps, Slices
+  semantic_gaps:         # Typische Verständnis-/Transferprobleme und deren Lösung
+  meta:                  # Metainformationen: Ziel, Abgrenzung, Lessons Learned

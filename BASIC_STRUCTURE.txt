@@ -1,0 +1,25 @@
+prinzipien:
+  - name: "User Story Mapping"
+    beschreibung: "..."
+    hauptziele:
+      - "..."
+    schritte:
+      - "Persona definieren"
+      - "Narrative beschreiben"
+      - "User Stories sammeln"
+    regeln:
+      - "Immer Nutzerperspektive einnehmen"
+    heuristiken:
+      - "..."
+    transferbeispiele:         # Transfer & Transformation Stories direkt am Prinzip
+      - kontext: "..."
+        regel: "..."
+        beispiel: "..."
+    semantic_gaps:
+      - beschreibung: "..."
+        schwellenwert: "..."
+        lösung: "..."
+    narrative_beispiele:       # Freitext oder Chain-of-Thought zur Erklärung
+      - "..."
+    lessons_learned:
+      - "..."

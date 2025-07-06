@@ -1,0 +1,26 @@
+framework:
+  meta:
+    name: LIFE
+    version: '1.0'
+    autor: Anonymous Developer
+    stand: 2025-07
+    ziel: Strukturiertes Codebook für LIFE Framework
+  prinzipien:
+  - prinzipien:
+    - name: Teamarbeit
+      beschreibung: Ein Prinzip, das echte Zusammenarbeit und gegenseitige Abhängigkeit
+        fördert.
+      marker:
+      - team_cohesion: 5
+      - mutual_dependency: ja
+      - meeting_frequency: 2
+      - commitment_level: 4
+  regeln: []
+  heuristiken: []
+  rollen: []
+  prozesse: []
+  beispiele: []
+  transferbeispiele: []
+  semantic_gaps: []
+  lessons_learned: []
+  open_questions: []
